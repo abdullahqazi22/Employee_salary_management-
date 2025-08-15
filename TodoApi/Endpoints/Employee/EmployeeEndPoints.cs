@@ -23,7 +23,7 @@ namespace TodoApi.Endpoints.Employee
                 var dto = new EmployeeReadDTO(employee.EmployeeId, employee.FullName, employee.Department, employee.HireDate);
                 return Results.Ok(dto);
             });
-            app.MapPost("/employees", async (CreateEmployeeDTO employeeDto, TodoDB db) =>
+            app.MapPost("/add/employees", async (CreateEmployeeDTO employeeDto, TodoDB db) =>
             {
                 var employee = new Entity.Employee
                 {
@@ -35,20 +35,23 @@ namespace TodoApi.Endpoints.Employee
                 await db.SaveChangesAsync();
                 return Results.Created($"/employees/{employee.EmployeeId}", new EmployeeReadDTO(employee.EmployeeId, employee.FullName, employee.Department, employee.HireDate));
             });
-            app.MapPut("/employees/{id}", async (int id, UpdateEmployeeDTO employeeDto, TodoDB db) =>
+            app.MapPut("/employees/by-employee/{employeeid}", async (int employeeid, UpdateEmployeeDTO employeeDto, TodoDB db) =>
             {
-                var employee = await db.Employees.FindAsync(id);
+                var employee = await db.Employees
+                .Where(s => s.EmployeeId == employeeid)
+                .FirstOrDefaultAsync();
                 if (employee == null) return Results.NotFound();
                 employee.FullName = employeeDto.FullName;
                 employee.Department = employeeDto.Department;
                 employee.HireDate = employeeDto.HireDate;
                 db.Employees.Update(employee);
                 await db.SaveChangesAsync();
-                return Results.NoContent();
+                //return Results.NoContent();
+                return Results.Ok(employee);
             });
-            app.MapDelete("/employees/{id}", async (int id, TodoDB db) =>
+            app.MapDelete("/employees/{employeeid}", async (int employeeid, TodoDB db) =>
             {
-                var employee = await db.Employees.FindAsync(id);
+                var employee = await db.Employees.Where(s => s.EmployeeId == employeeid).FirstOrDefaultAsync();
                 if (employee == null) return Results.NotFound();
                 db.Employees.Remove(employee);
                 await db.SaveChangesAsync();

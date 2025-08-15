@@ -13,18 +13,18 @@ namespace TodoApi.Data
         public DbSet<Entity.Salary> Salaries { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Salary>()
-                .HasKey(s => s.SalaryId);
+            //Employee --> salary (One to many) relationship
+            modelBuilder.Entity<Entity.Employee>()
+                .HasKey(e => e.EmployeeId); // Primary key for Employee
 
-            modelBuilder.Entity<Employee>()
-                .HasKey(e => e.EmployeeId);
+                modelBuilder.Entity<Entity.Salary>()
+                .HasKey(s => s.SalaryId); // Primary key for Salary
 
-            // One Salary → Many Employees
-            modelBuilder.Entity<Salary>()
-                .HasMany(s => s.Employees)
-                .WithOne(e => e.Salary)
-                .HasForeignKey(e => e.SalaryId)
-                .OnDelete(DeleteBehavior.Restrict); // prevent deleting salary if employees exist
+            modelBuilder.Entity<Entity.Employee>()
+                .HasMany(e => e.Salaries)
+                .WithOne(s =>s.Employee)
+                .HasForeignKey(s => s.EmployeeId) // Foreign key relationship
+                .OnDelete(DeleteBehavior.Cascade); // Optional: Cascade delete behavior
         }
     }
 }

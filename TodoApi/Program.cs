@@ -8,6 +8,20 @@ using Swashbuckle.AspNetCore.SwaggerUI; // Add this using directive
 using Swashbuckle.AspNetCore.Swagger; // Add this using directive
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Allow all CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+
 builder.Services.AddDbContext<TodoDB>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -19,6 +33,8 @@ builder.Services.AddSwaggerGen(c =>
 
 
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

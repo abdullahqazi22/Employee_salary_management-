@@ -1,6 +1,6 @@
 ﻿namespace TodoApi.DTOs.Salary
 {
-    public record CreateSalaryDTO(int Amount, string MonthYear)
+    public record CreateSalaryDTO(int EmployeeId,int Amount, DateTime MonthYear)
     {
     }
 }

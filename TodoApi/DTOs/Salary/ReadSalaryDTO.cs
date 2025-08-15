@@ -1,6 +1,6 @@
 ﻿namespace TodoApi.DTOs.Salary
 {
-    public class ReadSalaryDTO(int EmployeeId, string MonthYear, int Amount)
+    public record ReadSalaryDTO(int EmployeeId, DateTime MonthYear, int Amount)
     {
     }
 }

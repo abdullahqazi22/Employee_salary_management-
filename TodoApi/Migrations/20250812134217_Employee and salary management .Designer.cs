@@ -12,8 +12,8 @@ using TodoApi.Data;
 namespace TodoApi.Migrations
 {
     [DbContext(typeof(TodoDB))]
-    [Migration("20250811160217_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250812134217_Employee and salary management ")]
+    partial class Employeeandsalarymanagement
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,14 +40,9 @@ namespace TodoApi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("HireDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SalaryId")
-                        .HasColumnType("int");
+                        .HasColumnType("date");
 
                     b.HasKey("EmployeeId");
-
-                    b.HasIndex("SalaryId");
 
                     b.ToTable("Employees");
                 });
@@ -63,28 +58,33 @@ namespace TodoApi.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("int");
 
-                    b.Property<string>("MonthYear")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("MonthYear")
+                        .HasColumnType("date");
 
                     b.HasKey("SalaryId");
+
+                    b.HasIndex("EmployeeId");
 
                     b.ToTable("Salaries");
                 });
 
-            modelBuilder.Entity("TodoApi.Entity.Employee", b =>
-                {
-                    b.HasOne("TodoApi.Entity.Salary", "Salary")
-                        .WithMany("Employees")
-                        .HasForeignKey("SalaryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Salary");
-                });
-
             modelBuilder.Entity("TodoApi.Entity.Salary", b =>
                 {
-                    b.Navigation("Employees");
+                    b.HasOne("TodoApi.Entity.Employee", "Employee")
+                        .WithMany("Salaries")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("TodoApi.Entity.Employee", b =>
+                {
+                    b.Navigation("Salaries");
                 });
 #pragma warning restore 612, 618
         }

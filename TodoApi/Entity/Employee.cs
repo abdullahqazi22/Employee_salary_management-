@@ -1,55 +1,26 @@
-﻿//using System.ComponentModel.DataAnnotations;
-
-//namespace TodoApi.Entity
-//{
-//    public class Employee
-//    {
-//        [Key]
-//        public int EmployeeId { get; set; }
-//        public string? FullName { get; set; }
-//        public string? Department { get; set; }
-//        public DateTime HireDate { get; set; }
-//        public ICollection<Salary> Salaries { get; set; } 
-//    }
-
-//    public class Salary
-//    {
-//            [Key]
-//            public int SalaryId { get; set; }   
-//            public int EmployeeId { get; set; } // FK to Employee
-//            public string? MonthYear { get; set; }
-//            public int Amount { get; set; }
-//            public Employee? Employee { get; set; } //navigation 
-//    }
-
-
-//}
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TodoApi.Entity
 {
     public class Employee
     {
-        // Primary key
-        public int EmployeeId { get; set; }
+        [Key]
+        public int EmployeeId { get; set; }// Primary key
         public string? FullName { get; set; }
-        public string? Department { get; set; }
+        [Column(TypeName = "date")]
         public DateTime HireDate { get; set; }
-
-        // Foreign key to Salary
-        public int SalaryId { get; set; }
-        public Salary Salary { get; set; }
+        public string? Department { get; set; }
+        public ICollection<Salary>? Salaries { get; set; } = new List<Salary>();
     }
-
     public class Salary
     {
-        // Primary key
-        public int SalaryId { get; set; }
+        public int EmployeeId { get; set; }// Foreign key to Employee
+        [Column(TypeName = "date")]
+        public DateTime MonthYear { get; set; }
+        [Key]
+        public int SalaryId { get; set; } // Primary key
         public int Amount { get; set; }
-        public string? MonthYear { get; set; }
-
-        // Navigation property for all employees with this salary
-        public ICollection<Employee> Employees { get; set; }
+        public Employee Employee { get; set; } // Navigation property
     }
 }
-
