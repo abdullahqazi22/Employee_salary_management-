@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
+using TodoApi.DTOs.Salary;
+using TodoApi.Interface;
 
 namespace TodoApi.Endpoints.Salary
 {
@@ -7,65 +9,44 @@ namespace TodoApi.Endpoints.Salary
     {
         public static void MapSalaryEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapGet("/salaries", async (TodoDB db) =>
+            app.MapGet("/salaries", async (ISalaryService salaryService) =>
             {
-                    var employee= await db.Salaries
-                    .Select(s => new DTOs.Salary.ReadSalaryDTO(s.EmployeeId,s.MonthYear, s.Amount))
-                    .ToListAsync();
-                return Results.Ok(employee);
+              var salaries = await salaryService.GetAllSalariesAsync();
+                return Results.Ok(salaries);
             });
        
-            app.MapGet("/salaries/{employeeid}", async (int employeeid, TodoDB db) =>
+            app.MapGet("/salaries/{employeeid}", async (int employeeid,ISalaryService salaryService) =>
             {
-                var salary = await db.Salaries
-                 .Include(s => s.Employee) // Load the related Employee
-                 .FirstOrDefaultAsync(s => s.EmployeeId == employeeid);
+                var salary = await salaryService.GetSalaryByEmployeeIdAsync(employeeid);
                 if (salary == null) return Results.NotFound();
-
-                var dto = new DTOs.Salary.ReadSalaryDTO(
-                    salary.EmployeeId,
-                    salary.MonthYear,
-                    salary.Amount
-                 );
-
-                return Results.Ok(dto);
-
+                return Results.Ok(salary);
             });
 
-            app.MapPost("/salaries/{employeeid}", async (DTOs.Salary.CreateSalaryDTO salaryDto, TodoDB db) =>
+            app.MapPost("/salaries/add-employee-salary/{employeeid}", async (DTOs.Salary.CreateSalaryDTO salaryDto, ISalaryService salaryService) =>
             {
-                var salary = new Entity.Salary
-                {
-                    EmployeeId = salaryDto.EmployeeId,
-                    Amount = salaryDto.Amount,
-                    MonthYear = salaryDto.MonthYear,
-                };
-                db.Salaries.Add(salary);
-                await db.SaveChangesAsync();
-                return Results.Created($"/salaries/{salary.EmployeeId}", new DTOs.Salary.ReadSalaryDTO(salary.EmployeeId, salary.MonthYear, salary.Amount));
+                await salaryService.CreateSalaryAsync(salaryDto);
+                return Results.Created($"/salaries/{salaryDto.EmployeeId}", salaryDto);
             });
-            app.MapPut("/salaries/by-employee/{employeeid}", async (int employeeid, DTOs.Salary.UpdateSalaryDTO salaryDto, TodoDB db) =>
+            app.MapPut("/salaries/by-employee/{employeeid}", async (int employeeid,UpdateSalaryDTO updateSalaryDTO ,ISalaryService salaryService) =>
             {
-                var salary = await db.Salaries
-                .Where(s => s.EmployeeId == employeeid)
-                .FirstOrDefaultAsync();
-                if (salary == null) return Results.NotFound();
-                salary.Amount = salaryDto.Amount;
-                salary.MonthYear = salaryDto.MonthYear;
-                db.Salaries.Update(salary);
-                await db.SaveChangesAsync();
-                //return Results.NoContent();
+                await salaryService.UpdateSalaryAsync(employeeid, updateSalaryDTO);
                 return Results.Ok(new { message = "Salary updated successfully" });
-
             });
-            app.MapDelete("/salaries/by-employee/{employeeid}", async (int employeeid, TodoDB db) =>
+            app.MapDelete("/salaries/by-employee/{employeeid}", async (int employeeid, ISalaryService salaryService) =>
             {
-                var salary = await db.Salaries.Where(s=> s.EmployeeId == employeeid).FirstOrDefaultAsync();
-                if (salary == null) return Results.NotFound();
-                db.Salaries.Remove(salary);
-                await db.SaveChangesAsync();
-                return Results.NoContent();
-            });
+                await salaryService.DeleteSalaryAsync(employeeid)
+                .ContinueWith(task => 
+                {
+                    if (task.IsCompletedSuccessfully)
+                    {
+                        return Results.Ok(new { message = "Salary deleted successfully" });
+                    }
+                    else
+                    {
+                        return Results.NotFound(new { message = $"Salary for employee with ID {employeeid} not found." });
+                    }
+                });
+              });
         }
     }
 }

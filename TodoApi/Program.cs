@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models; // Add this using directive
+using Swashbuckle.AspNetCore.Swagger; // Add this using directive
+using Swashbuckle.AspNetCore.SwaggerGen; // Add this using directive
+using Swashbuckle.AspNetCore.SwaggerUI; // Add this using directive
 using TodoApi.Data;
 using TodoApi.Endpoints.Employee;
 using TodoApi.Endpoints.Salary;
-using Microsoft.OpenApi.Models; // Add this using directive
-using Swashbuckle.AspNetCore.SwaggerGen; // Add this using directive
-using Swashbuckle.AspNetCore.SwaggerUI; // Add this using directive
-using Swashbuckle.AspNetCore.Swagger; // Add this using directive
+using TodoApi.Interface;
+using TodoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<TodoDB>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ISalaryService, SalaryService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
